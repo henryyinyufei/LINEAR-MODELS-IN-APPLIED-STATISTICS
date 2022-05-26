@@ -1,0 +1,242 @@
+---
+title: "Assignment 6"
+linestretch: 1.5
+output: pdf_document
+---
+
+
+```{r, warning = FALSE, message = FALSE}
+library(MASS)
+library(tidyverse)
+```
+\bigskip
+
+# 1.
+
+# a).
+
+```{r, warning = FALSE, message = FALSE}
+# import data
+prestige <- read_csv("prestige.csv", col_types = cols(type = col_factor()))
+```
+\bigskip
+
+```{r}
+ols.lm <- lm(data = prestige, prestige ~ type*education + type*income)
+summary(ols.lm)
+```
+\bigskip
+
+We notice that the interaction terms are all insignificant, so we will fit the model without it.
+
+\bigskip
+```{r}
+ols.lm <- lm(data = prestige, prestige ~ type + education + income)
+summary(ols.lm)
+```
+\bigskip
+
+Hypothesis Test for Significance of Regression
+
+\begin{align*}
+  &H_0: \ \beta_1 = \beta_2 = \beta_3 = \beta_4 = 0\\
+  &\text{vs.} \\
+  &H_A: \  \text{at least one $\beta\neq 0 $}
+\end{align*}
+
+p-value is almost 0, we reject the null hypothesis and conclude that there is a linear relationship.
+
+Hypothesis Test for a single $\beta_j$
+
+\begin{align*}
+        &H_0: \ \beta_j=0\\ 
+        &\text{vs.} \\ 
+        &H_A: \ \beta_j \neq 0, \ \ \text{given other regressors in the model}
+\end{align*}
+
+p-values for type prof, type wc, education, and income are <$\alpha=0.05$, we conclude that they are all significant.
+
+\newpage
+# b).
+```{r}
+par(mfrow = c(2,2))
+plot(ols.lm)
+rstandard(ols.lm)
+```
+\bigskip
+
+Looking the residual plot and standardized residuals, point 6 is a problematic observation. the profeesion for observation 6 is minister.
+
+\newpage
+
+# c).
+```{r}
+rr.lm <- rlm(data = prestige, prestige ~ type + income + education, psi = psi.huber)
+sum.rr.lm <- summary(rr.lm)
+sum.rr.lm
+tval <- sum.rr.lm$coefficients[,3]
+pval <- 2*pt(abs(tval),40, lower = FALSE)
+pval
+```
+\bigskip
+
+According to the p-value we calculated, the same variables appear significant when compared to the usual linear model fit.
+
+\newpage
+
+# d).
+```{r}
+plot.data <- as_tibble(rr.lm$w) %>% 
+  rename(weights = value) %>% 
+  mutate(observations = row_number())
+point.data <- filter(plot.data, weights != 1)
+ggplot(data = plot.data, aes(x = observations, y = weights)) + 
+  geom_point() + 
+  geom_text(data = point.data,aes(label=observations), color = "red", nudge_x = 1)
+```
+\bigskip
+
+the profession for observation 6 is minister has the smallest weights which is expected to see.
+
+\newpage
+# 2.
+```{r, warning = FALSE, message = FALSE}
+# import data
+assignment6 <- read_csv("assignment6.csv")
+```
+\bigskip
+# a).
+```{r}
+lm_mdl <- lm(data = assignment6, y ~ x)
+summary(lm_mdl)
+```
+\bigskip
+
+The fitted model is $y = -9.067 + 49.850x$.
+
+\newpage
+# b).
+```{r}
+par(mfrow = c(2,2))
+plot(lm_mdl)
+```
+\bigskip
+
+According to the residual plots, i do not feel comfortable constructing a confidence interval for the slope.            
+Because we do not see the points distributed around 0 in Residuals vs Fitted and Scale-Location plots, and the lower-tail in Normal Q-Q plot do not fall on the straight line.
+
+\newpage
+# c).
+```{r}
+rlm_mdl <- rlm(data = assignment6, y ~ x, psi = psi.huber)
+summary(rlm_mdl)
+```
+\bigskip
+
+The fitted model is $y = -2.9548 + 69.7441x$.
+
+\newpage
+# d).
+```{r}
+ggplot(data = assignment6, aes(x = x, y = y)) +
+  geom_point(size = 2) +
+  geom_abline(aes(slope = lm_mdl$coefficients[2],
+                  intercept = lm_mdl$coefficients[1],
+                  color = "Ordinary least squares regression"),
+              size = 2) +
+  geom_abline(aes(slope = rlm_mdl$coefficients[2],
+                  intercept = rlm_mdl$coefficients[1],
+                  color = "Robust regression"),
+              size = 2)
+```
+\bigskip
+
+Robust regression fits the data better in terms of the majority of data.
+
+\newpage
+# e).
+```{r}
+set.seed(123)
+n <- 1050
+m <- 1000
+beta_star <- NULL
+for (i in 1:m){
+  index <- sample(n, replace = TRUE) 
+  xstar <- assignment6$x[index]
+  ystar <- assignment6$y[index] 
+  fit <- rlm(ystar ~ xstar , psi = psi.huber)
+  beta_star[i] <- coef(fit)["xstar"] 
+}
+hist(beta_star)
+```
+\newpage
+
+# f).
+```{r}
+CI <- quantile(beta_star, c(0.025,0.975))
+CI
+```
+\bigskip
+
+The estimated 95% confidence interval is [67.29611 , 71.84983].
+
+\newpage
+
+# g).
+\begin{align*}
+  &H_0: \ \text{the slope difference is 0}\\
+  &\text{vs.} \\
+  &H_A: \  \text{the slope difference is not 0}
+\end{align*}
+
+```{r}
+rlm_mdl$coefficients[2]
+CI
+```
+\bigskip
+
+The estimated slope we calculated previous is 69.74409 which is inside the 95% confidence interval, so we fail to reject $H_0$, and conclude that the slope difference is 0.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

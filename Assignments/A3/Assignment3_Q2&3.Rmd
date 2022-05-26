@@ -1,0 +1,164 @@
+---
+title: "Assignment 2 Question 2 & 3"
+output: pdf_document
+---
+
+# 2.
+# a).
+```{r}
+# import data
+x1 <-c(4.49,3.04,3.94,2.63,4.55,3.88,2.92,2.82,3.17,2.91)
+x2 <-c(2.92,4.33,4.27,1.92,2.47,2.36,3.21,4.22,1.80,2.35)
+y <-c(-5.32,-9.24,-5.89,1.15,-1.47,1.91,-3.99,-6.82,1.49,-0.89)
+
+# combine X matrix
+X <- cbind(rep(1,10),x1,x2)
+
+# Compute the covariance for the least squares regression estimators
+diag(solve(t(X) %*% X)*2)
+```
+So the covariance for the least squares regression estimators are 7.5752722, 0.4348632, and 0.2317155.
+
+\newpage
+# b).
+```{r}
+# estimate the least squares regression line
+reg <- lm(y ~ x1+x2)
+reg_sum <- summary(reg)
+
+# find the estimate of V(beta-hat)
+reg_sum$coefficients[,2]^2
+```
+So the estimate of V(beta-hat) are 10.2386726, 0.5877574, and 0.3131846.
+
+\newpage
+# c).
+```{r}
+# compute hat matrix
+H <- X %*% solve(t(X) %*% X) %*% t(X)
+
+# compute the covariance matrix of the residuals
+(evar <- (diag(10)-H)*2)
+
+# find the variance for the 1st and 3rd residuals
+evar[1,1]
+evar[3,3]
+```
+So the variance for the 1st residual is 1.316208, and the variance for the 3rd residual is 1.295119.
+
+\newpage
+# d).
+```{r}
+# find the covariance between the first and third residual
+evar[1,3]
+```
+So the covariance between the first and third residual is -0.4239149.
+
+\newpage
+# 3.
+# a).
+```{r}
+#read in data from Center for Radiative Shock Hydrodynamics (crash)
+crash=read.csv("data_computer_experiment.csv")
+
+#attach that dataframe to use variable names in the input file
+attach(crash)
+
+#fit linear model and summarize
+crash.lm <- lm(location~thickness+energy+flux+gamma+opacity)
+(crash.sum <- summary(crash.lm))
+
+# compute the the estimated variance for the least squares estimator of the regression
+#coefficient for the thickness of the beryllium disk
+crash.sum$coefficients[2,2]^2
+```
+So the estimated variance for the least squares estimator of the regression
+coefficient for the thickness of the beryllium disk is 0.3999662.
+
+\newpage
+# b).
+```{r}
+# Combine X matrix
+X <- cbind(rep(1,100),thickness,energy,flux,gamma,opacity)
+
+# Compute the covariance for the least squares regression estimators
+solve(t(X) %*% X) * crash.sum$sigma^2
+```
+So the estimated covariance between the least squares estimators of the
+regression coefficients for the thickness of the beryllium disk and the wall
+opacity is 3.1840600198.
+
+\newpage
+# c).
+```{r}
+par(mfrow = c(2, 2))
+plot(crash.lm)
+```
+
+\newpage
+# i Check the constant variance assumption for the error
+According to the Residuals vs Fitted plot, we can see a "smiley face", the residual goes down before fitted value is 400, and goes up after fitted value is 400. However it is not too bad. Most of the points are still within the horizontal band(let's say residuals from -10 to 20). Moreover according to the Scale-Location plot, it is almost a straight line and residuals are spread equally above and below it. So i would conclude that the constant variance assumption is satisfied.
+
+\newpage
+# ii Check the normality assumption.
+The Normal Q-Q plot shows almost all the points fall on the straight dotted line except a few point on the lower tail, so the normality of errors assumption is satisfied.
+
+\newpage
+# iii Check for large leverage points.
+According to Residuals vs leverage plot, we see none of the points in our dataset has both high leverage and high standardized residuals. 
+
+\newpage
+# iv Check for outliers.
+```{r}
+# Compute studentized residuals
+rstudent(crash.lm)
+```
+According to the plot and studentized residuals, point 15 and point 62 have studentized residuals greater than 3, so these two points are potential outliers.
+
+```{r}
+# Construct new dataset without point 15 and point 62.
+library(tidyverse)
+newcrash <- filter(crash,thickness!= 22.00 & thickness != 21.17)
+
+# fit linear model with new dataset
+newcrash.lm <- lm(data=newcrash,location~thickness+energy+flux+gamma+opacity)
+
+# Compare with old linear model
+crash.sum
+summary(newcrash.lm)
+```
+Deleting point 15 and 62 has almost no effect on the estimates of the regression coefficients except gamma; however, i noticed that the p-value for gamma is way larger than significant level 0.05, so we fail to reject the hypothesis that beta(gamma) is 0 in presence of thickness, energy, flux, and opacity in the model, and since point 15 and point 62 are considering not affect other coefficients except gamma, so i would conclude that point 15 and 62 are not outliers.
+
+\newpage
+# v. Check for influential points.
+```{r}
+# hat matrix
+H <- X %*% solve(t(X) %*% X) %*% t(X)
+# hii
+diag(H)
+```
+
+According to residual vs leverage plot, we do not see any points appear outside of cooks distance line marked by the dotted red line; moreover, we do not observe any high hii points.
+
+\newpage
+# vi. Check the structure of the relationship between the predictors and the response.
+We discussed about gamma in previous question, we will discuss it further in this question.
+```{r}
+# check Multicollinearity
+library(faraway)
+vif(crash.lm)
+```
+since VIF is not greater than 10, we do not need to worry about multicollinearity
+```{r}
+# Partial regression plot
+library(car)
+avPlots(crash.lm)
+```
+```{r}
+# Partial residual plot
+crPlots(crash.lm)
+```
+If predict variables have an linear relationship with response variables, then these plots should display a linear pattern; however, we do not see a clear linear pattern between gamma and location, and we discussed hypothesis test in previous question, so we can further conclude that there is not an linear relationship between location and gamma. Further analyses (transformation) are needed to answer the question whether we should include gamma variable in our model.
+
+
+

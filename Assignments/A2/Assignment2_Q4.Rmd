@@ -1,0 +1,87 @@
+---
+title: "Assignment 2 Question 4"
+output: pdf_document
+---
+
+# a).
+```{r}
+# generate two predictor variables
+x1 <- rnorm(200, mean=0, sd=2)
+x2 <- rnorm(200, mean=0, sd=2)
+
+# generate epsilon
+eps <- rnorm(200, mean=0, sd=1)
+
+# generate response vector y
+y = 1 + 2*x1 + 5*x2 + eps
+
+# estimate the least squares regression line
+reg <- lm(y ~ x1+x2)
+summary(reg)
+```
+
+**the estimated line is:**
+```{r}
+paste("y=",
+      reg$coefficients[1],"+",
+      reg$coefficients[2],"x1", "+",
+      reg$coefficients[3],"x2")
+```
+
+\newpage
+# b).
+
+
+```{r}
+# estimate the variance for each of the three regression coefficients
+reg_sum <-summary(reg)
+(reg_sum$coefficients[1,2])^2
+(reg_sum$coefficients[2,2])^2
+(reg_sum$coefficients[3,2])^2
+```
+
+
+```{r}
+# theoretical values for the variance of these predictors
+X <- cbind(rep(1, 200), x1, x2)
+diag(solve(t(X) %*% X))
+```
+
+**the estimated variance of the three regression coefficients are close to**
+**theoretical values for the variance of these predictors.**
+
+\newpage
+# c).
+```{r}
+paste("p-value is",
+      reg_sum$coefficients[2,4])
+```
+**p-value is less than significant level 0.05, so we reject null hypothesis.**
+**we can conclude that the coefficient for x1 is not zero.**
+
+\newpage
+# d).
+```{r}
+# repeat part a. and c. 1000 times
+count <- 0
+for(i in 1:1000){
+  x1 <- rnorm(200, mean=0, sd=2)
+  x2 <- rnorm(200, mean=0, sd=2)
+  eps <- rnorm(200, mean=0, sd=1)
+  y = 1 + 2*x1 + 5*x2 + eps
+  reg <- lm(y ~ x1+x2)
+  reg_sum <- summary(reg)
+  pval <- reg_sum$coefficients[2,4]
+  if (pval < 0.05) count <- count + 1
+}
+print(count)
+```
+**repeat part a and c 1000 times, we reject null hypothesis 1000 times. **
+
+
+
+
+
+
+
+

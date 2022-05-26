@@ -1,0 +1,134 @@
+---
+title: "Old Faithful Geyser"
+output: pdf_document
+---
+
+```{r}
+# import geyser_data
+geyser_data <- read.csv("geyser.csv",header=TRUE)
+```
+**a).**
+```{r}
+# Construct a histogram of the interval between eruptions
+hist(geyser_data $ waiting,
+     main = "Histogram of the interval between eruptions",
+     xlab = "interval")
+```
+It is a bimodal histogram, centered at around 55 minutes and 80 minutes.
+
+I would say it is faithful, since it will erupt between 40 minutes and 100 minutes; moreover, it will erupt around 55 minutes and 80 minutes most likely which means visitors are most likely wait around 55 minutes or 80 minutes if they just missed the last eruption.
+
+\newpage
+**b).**
+```{r}
+mean(geyser_data $ waiting)
+sd(geyser_data $ waiting)
+```
+I would not use the standard descriptive statistics for the interval data(mean,standard deviation). The histogram is not bell-shaped, so the center and spread are not a good summary of the data.
+
+\newpage 
+**c).**
+```{r}
+# Divide the data into two parts
+geyser_data_3_or_less <- subset(geyser_data, eruptions <= 3)
+geyser_data_larger_than_3 <- subset(geyser_data, eruptions >3)
+# Construct histograms of intervals between eruptions for both sets of data
+hist(geyser_data_3_or_less $ waiting,
+     main = "Histogram of intervlas between eruption of 3 or less minutes",
+     xlab = "interval")
+hist(geyser_data_larger_than_3 $ waiting,
+     main = "Histogram of intervals between eruption that is large than 3 minutes",
+     xlab = "interval")
+```
+```{r}
+# Find the mean and standard deviation in two groups.
+
+# eruption 3 minutes or less
+mean1=mean(geyser_data_3_or_less $ waiting)
+sd1=sd(geyser_data_3_or_less $ waiting)
+
+# eruption greater than 3 minutes
+mean2=mean(geyser_data_larger_than_3 $ waiting)
+sd2=sd(geyser_data_larger_than_3 $ waiting)
+```
+Use the 68-95-99.7 empirical rule to construct a rule based on the length of the previous eruption (3 minutes or less or greater than 3 minutes) to estimate the interval between eruptions.
+```{r}
+mean1-sd1
+mean1+sd1
+```
+If the length of the previous eruption is 3 minutes or less, then 68% of visitors will wait around 49 minutes to 60 minutes.
+```{r}
+mean1-2*sd1
+mean1+2*sd1
+```
+If the length of the previous eruption is 3 minutes or less, then 95% of visitors will wait around 43 minutes to 66 minutes.
+```{r}
+mean1-3*sd1
+mean1+3*sd1
+```
+If the length of the previous eruption is 3 minutes or less, then 99.7% of visitors will wait around 37 minutes to 72 minutes.
+```{r}
+mean2-sd2
+mean2+sd2
+```
+If the length of the previous eruption is greater than 3 minutes, then 68% of visitors will wait around 74 minutes to 86 minutes.
+```{r}
+mean2-2*sd2
+mean2+2*sd2
+```
+If the length of the previous eruption is greater than 3 minutes, then 95% of visitors will wait around 68 minutes to 92 minutes.
+```{r}
+mean2-3*sd2
+mean2+3*sd2
+```
+If the length of the previous eruption is greater than 3 minutes, then 99.7% of visitors will wait around 62 minutes to 98 minutes.
+
+\newpage
+**d).**
+```{r}
+# Construct a scatter-plot
+plot(formula = waiting ~ eruptions,
+     data = geyser_data,
+     main = "interval VS. previous eruption duration",
+     xlab = "eruption duration",
+     ylab = "interval")
+```
+According to the scatter plot, we can see there are two subgroups just like we discussed earlier(eruption duration 3 minutes or less and greater than 3 minutes). we can also conclude that there is a positive relationship between eruption duration and interval. As the eruption duration increased, interval will increase as well.
+
+A straight line appear to provide a reasonable approximation of the relationship between interval and eruption duration, so linear regression could be used here.
+
+\newpage
+**e).**
+```{r}
+reg <- lm(formula = waiting ~ eruptions,
+          data = geyser_data)
+plot(formula = waiting ~ eruptions,
+     data = geyser_data,
+     main = "interval VS. previous eruption duration",
+     xlab = "eruption duration",
+     ylab = "interval")
+abline(reg,
+       col = "red")
+```
+```{r}
+reg $ coefficients
+```
+We can conclude that for each additional minutes of eruption duration, interval increases around 11 minutes. 
+
+\newpage
+**f).**
+```{r}
+range(geyser_data$eruptions)
+predict(reg, data.frame(eruptions = 2))
+```
+If the length of the previous eruption was 2 minutes, I would expect to wait around 55 minutes until the next eruption.
+
+
+
+
+
+
+
+
+
+

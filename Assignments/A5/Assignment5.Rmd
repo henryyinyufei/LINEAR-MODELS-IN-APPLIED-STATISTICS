@@ -1,0 +1,461 @@
+---
+title: "Assignment 5"
+linestretch: 1.5
+output: pdf_document
+---
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(leaps)
+```
+
+# 1.
+# a) forward selection
+```{r}
+# import data
+cement <- read.csv("cement.csv")
+attach(cement)
+
+# correlation between xi and y.
+cor(x1,y)
+cor(x2,y)
+cor(x3,y)
+cor(x4,y)
+cor(x5,y)
+```
+\bigskip
+
+Because x5 has the largest correlation with y, we first add x5 into our model.
+
+\bigskip
+```{r}
+mdl_x5 <- lm(y ~ x5)
+summary(mdl_x5)
+```
+\bigskip
+
+Because p-value 0.00372 is less than $\alpha_{IN}=0.10$, x5 is accepted.
+
+\bigskip
+```{r}
+# partial correlation
+x1_x5 <- lm(x1 ~ x5)
+cor(mdl_x5$residuals, x1_x5$residuals)
+x2_x5 <- lm(x2 ~ x5)
+cor(mdl_x5$residuals, x2_x5$residuals)
+x3_x5 <- lm(x3 ~ x5)
+cor(mdl_x5$residuals, x3_x5$residuals)
+x4_x5 <- lm(x2 ~ x5)
+cor(mdl_x5$residuals, x4_x5$residuals)
+```
+\bigskip
+
+After we fit x5 in our model, x1 has the largest partial correlation, so we next add x1 into our model.
+
+\bigskip
+```{r}
+mdl_x5x1 <- lm(y ~ x5 + x1)
+summary(mdl_x5x1)
+```
+\bigskip
+
+Because p-value 1.86e-06 is less than $\alpha_{IN}=0.10$, x1 is accepted.
+
+\bigskip
+```{r}
+# partial correlation
+x2_x5x1 <- lm(x2 ~ x5 + x1)
+cor(mdl_x5x1$residuals, x2_x5x1$residuals)
+x3_x5x1 <- lm(x3 ~ x5 + x1)
+cor(mdl_x5x1$residuals, x3_x5x1$residuals)
+x4_x5x1 <- lm(x4 ~ x5 + x1)
+cor(mdl_x5x1$residuals, x4_x5x1$residuals)
+```
+\bigskip
+
+After we fit x5,x1 in our model, x2 has the largest partial correlation, so we next add x2 into our model.
+
+\bigskip
+```{r}
+mdl_x5x1x2 <- lm(y ~ x5 + x1 + x2)
+summary(mdl_x5x1x2)
+```
+\bigskip
+
+Because p-value 0.03660 is less than $\alpha_{IN}=0.10$, x2 is accepted.
+
+\bigskip
+```{r}
+# partial correlation
+x3_x5x1x2 <- lm(x3 ~ x5 + x1 +x2)
+cor(mdl_x5x1x2$residuals, x3_x5x1x2$residuals)
+x4_x5x1x2 <- lm(x4 ~ x5 + x1 +x2)
+cor(mdl_x5x1x2$residuals, x4_x5x1x2$residuals)
+```
+\bigskip
+
+After we fit x5,x1,x2 in our model, x4 has the largest partial correlation, so we next add x4 into our model.
+
+\bigskip
+```{r}
+mdl_x5x1x2x4 <- lm(y ~ x5 + x1 + x2 + x4)
+summary(mdl_x5x1x2x4)
+```
+\bigskip
+
+Because p-value 0.61013 is greater than $\alpha_{IN}=0.10$, we do not add x4 into our model and stop variable selection.
+
+\bigskip
+```{r}
+# final model
+mdl_x5x1x2
+```
+\bigskip
+
+The final model is: $y = 70.5927 -0.224 x_5 + 1.4255 x_1 + 0.4317x_2$.
+
+\newpage
+
+# b). backward elimination
+```{r}
+# full model
+full_mdl <- lm(y ~ x1 + x2 + x3 + x4 +x5)
+summary(full_mdl)
+```
+\bigskip
+
+After fit the full model, x3 has the largest p-value 0.7947 and is large than $\alpha_{OUT}=0.10$, so we remove x3 from our model.
+
+\bigskip
+```{r}
+# remove x3
+mdl_remove_x3 <- lm(y ~ x1 + x2 + x4 + x5)
+summary(mdl_remove_x3)
+```
+\bigskip
+
+After remove x3 from our model, x4 has the largest p-value  0.61013 and is large than $\alpha_{OUT}=0.10$, so we remove x4 from our model.
+
+\bigskip
+```{r}
+# remove x3 and x4
+mdl_remove_x3x4 <- lm(y ~ x1 + x2 + x5)
+summary(mdl_remove_x3x4)
+```
+\bigskip
+
+After remove x3 and x4 from our model, x5 has the largest p-value  0.20165 and is large than $\alpha_{OUT}=0.10$, so we remove x5 from our model.
+
+\bigskip
+```{r}
+# remove x3,x4, and x5
+mdl_remove_x3x4x5 <- lm(y ~ x1 + x2)
+summary(mdl_remove_x3x4x5)
+```
+\bigskip
+
+After remove x3,x4 and x5 from our model, x1 has the largest p-value  2.42e-07 and is less than $\alpha_{OUT}=0.10$, so we keep x1 in our model, and stop backward elimination.
+
+\bigskip
+```{r}
+# final model
+mdl_remove_x3x4x5
+```
+\bigskip
+
+The final model is: $y = 52.3983 + 1.4568x_1 + 0.6668x_2$.
+
+\newpage
+
+# c). 
+```{r}
+cor(x4,x5)
+```
+\bigskip
+
+Because x4 and x5 are extremely correlated, when both x4 and x5 were considered together in the model, it will have multicollinearity problem.
+
+\newpage
+
+# d). stepwise regression
+```{r}
+# According to part a, we add x5 first into our model.
+mdl_add_x5 <- lm(y ~ x5)
+summary(mdl_add_x5)
+```
+\bigskip
+
+Because x5's p-value 0.000372 is less than $\alpha_{IN}=0.10$, we add x5 into our model.
+
+\bigskip
+
+```{r}
+# According to part a, we add x1 next.
+mdl_add_x5x1 <- lm(y ~ x5 + x1)
+summary(mdl_add_x5x1)
+```
+\bigskip
+
+Because x1's p-value 1.86e-06 is less than $\alpha_{IN}=0.10$, we add x1 into our model.                                
+Because x5's p-value 1.96e-07 is less than $\alpha_{OUT}=0.10$, we keep x5 in our model.                                
+
+\bigskip
+```{r}
+# According to part a, we add x2 next.
+mdl_add_x5x1x2 <- lm(y ~ x5 + x1 + x2)
+summary(mdl_add_x5x1x2)
+```
+\bigskip
+
+Because x2's p-value 0.03660 is less than $\alpha_{IN}=0.10$, we add x2 into our model.                                 
+Because x1's p-value 6.4e-07 is less than $\alpha_{OUT}=0.10$, we keep x1 in our model.                                 
+Because x5's p-value 0.20165 is larger than $\alpha_{OUT}=0.10$, we remove x5 from our model.                           
+
+\bigskip
+
+```{r}
+# According to part a, we add x4 next.
+mdl_add_x1x2x4 <- lm(y ~ x1 + x2 + x4)
+summary(mdl_add_x1x2x4)
+```
+\bigskip
+
+Because x4's p-value 0.23320 is greater than $\alpha_{IN}=0.10$, we do not add x4 into our model.                       
+Because both x1 and x2 p-value is less than $\alpha_{OUT}=0.10$, we keep x1 and x2 in our model, and stop stepwise regression.
+
+\bigskip
+```{r}
+# final model
+mdl_add_x1x2 <- lm(y ~ x1 + x2)
+mdl_add_x1x2
+```
+\bigskip
+
+The final model is: $y = 1.4568x_1 + 0.6668x_2$.
+
+\newpage
+
+# d). AIC
+The AIC is
+
+$$AIC = nln\frac{SS_{Res}}{n}+2p$$
+
+
+```{r}
+# AIC for model in a
+# n = 13
+# p = 3 + 1 = 4
+(AIC_a <- 13 * log(sum((mdl_x5x1x2$residuals)^2)/13) + 2 * 4)
+```
+\bigskip
+
+AIC for model in a is 24.43856.
+
+\bigskip
+```{r}
+# Since we get the same model in b and d, AIC for them are the same.
+# n = 13
+# p = 2 + 1 = 3
+(AIC_b <- 13 * log(sum((mdl_remove_x3x4x5$residuals)^2)/13) + 2 * 3)
+(AIC_d <- 13 * log(sum((mdl_add_x1x2$residuals)^2)/13) + 2 * 3)
+```
+\bigskip
+
+AIC for model in b or d is 24.92546.
+
+\newpage
+# 2.
+# a).
+$H_0 : \beta_1 = \beta_2 = \beta_3 = \beta_4 = \beta_5=0$ 
+\newline
+\bigskip
+All the $\beta s$ are in the model, it's full model.
+\newline
+\bigskip
+$F_0 = \frac{SS_R/k}{SS_{Res}/(n-k-1)}=\frac{MS_R}{MS_{Res}}$ follows the $F_{k,n-k-1}$ distributions where k = 5, n is the number of observations.
+
+\bigskip
+# b).
+$H_0 : \beta_4 = \beta_5 = 0$, given that the first 3 variables are in the model. 
+\newline
+\bigskip
+partial $\beta$ to $\beta_{a}(\beta_0,\beta_1,\beta_2,\beta_3)$ is (p - r) $\times$ 1, $\beta_{b}(\beta_4,\beta_5)$ is (r $\times$ 1), in this case p = 6, r = 2.
+\newline
+\bigskip
+$F_0 = \frac{SS_R(\beta_4,\beta_5|\beta_0,\beta_1,\beta_2,\beta_3)/2}{MS_{Res}}$ follows the $F_{r,n-p}$ distribution where r = 2, p = 6, and n is the number of observations.
+
+\newpage
+# 3.
+```{r}
+# import data
+reactor <- read.csv("reactor.csv")
+attach(reactor)
+reactor <- select(reactor, y:x7)
+
+# p = 2
+mdl_p2x1 <- lm(y ~ x1)
+sum_p2x1 <- summary(mdl_p2x1)
+mdl_p2x2 <- lm(y ~ x2)
+sum_p2x2 <- summary(mdl_p2x2)
+mdl_p2x3 <- lm(y ~ x3)
+sum_p2x3 <- summary(mdl_p2x3)
+mdl_p2x4 <- lm(y ~ x4)
+sum_p2x4 <- summary(mdl_p2x4)
+mdl_p2x5 <- lm(y ~ x5)
+sum_p2x5 <- summary(mdl_p2x5)
+mdl_p2x6 <- lm(y ~ x6)
+sum_p2x6 <- summary(mdl_p2x6)
+mdl_p2x7 <- lm(y ~ x7)
+sum_p2x7 <- summary(mdl_p2x7)
+```
+\bigskip
+For P = 2, we will choose 1 from 7 predictors, and the other 1 is intercept, So there are 7 combinations in total.      
+For P = 3, we will choose 2 from 7 predictors, and the other 1 is intercept, So there are 21 combinations in total.     
+For P = 4, we will choose 3 from 7 predictors, and the other 1 is intercept, So there are 35 combinations in total.     
+For P = 5, we will choose 4 from 7 predictors, and the other 1 is intercept, So there are 35 combinations in total.     
+I will manually fit the model get maximum $R^2$, minimum $MS_{Res}$ and Mallow's $C_p$ Statistic for P = 2, and use \verb |regsubsets()| function in \verb |leap| package to compelete the rest.
+
+ 
+\subsection*{a). maximum $R^2$} 
+```{r}
+# for P = 2
+(p2_r2_max <- max(sum_p2x1$r.squared, sum_p2x2$r.squared, sum_p2x3$r.squared, sum_p2x4$r.squared,
+                 sum_p2x5$r.squared, sum_p2x6$r.squared, sum_p2x7$r.squared))
+# regsubsets
+p2 <- regsubsets(data = reactor, y ~ ., nbest = 7,  nvmax = 1, method = "exhaustive")
+sum_p2 <- summary(p2)
+(p2_max <- max(sum_p2$rsq))
+```
+\bigskip
+We get the same answer by fiting the model manually and using regsubsets() function.
+\bigskip
+```{r}
+# p = 3
+p3 <- regsubsets(data = reactor, y ~ ., nbest = 21, nvmax = 2, method = "exhaustive")
+sum_p3 <- summary(p3)
+(p3_max <- max(sum_p3$rsq))
+# p = 4 
+p4 <- regsubsets(data = reactor, y ~ ., nbest = 35, nvmax = 3, method = "exhaustive")
+sum_p4 <- summary(p4)
+(p4_max <- max(sum_p4$rsq))
+# p = 5
+p5 <- regsubsets(data = reactor, y ~ ., nbest = 35, nvmax = 4, method = "exhaustive")
+sum_p5 <- summary(p5)
+(p5_max <- max(sum_p5$rsq))
+```
+```{r}
+# maximum R square vector
+(max_r2 <- c(p2_max, p3_max, p4_max, p5_max))
+# plot 
+p <- c(2,3,4,5)
+plot(p, max_r2, type = "l",
+     ylab = "Coefficient of Determination",
+     main = "Maximum R square VS. P")
+```
+\bigskip
+I would choose the model at p = 4, after p = 4 even though $R^2$ is still increase, it's only a small increase.
+\bigskip
+
+```{r}
+# final model
+summary(p4,all.best = FALSE)
+lm(y~ x1 + x3 + x6)
+```
+\bigskip
+Our final model is: $y = -0.01778 - 0.2982 x_1 +1.303 x_3 - 0.000005536 x_6$.
+
+
+\newpage
+\subsection*{b). minimum $MS_{Res}$} 
+```{r}
+# p = 2
+(p2_msr_min <- min(sum_p2x1$sigma^2, sum_p2x2$sigma^2, sum_p2x3$sigma^2, sum_p2x4$sigma^2,
+                  sum_p2x5$sigma^2, sum_p2x6$sigma^2, sum_p2x7$sigma^2))
+(p2_min <- min(sum_p2$rss/(28-2))) # divide n - p to get MSR from SSR
+# p = 3
+(p3_min <- min(sum_p3$rss/(28-3)))
+# p = 4
+(p4_min <- min(sum_p4$rss/(28-4)))
+# p = 5
+(p5_min <- min(sum_p5$rss/(28-5)))
+
+```
+```{r}
+# minimum mean square residual vector
+(min_msr <- c(p2_min, p3_min, p4_min, p5_min))
+# plot
+plot(p, min_msr, type = "l",
+     ylab = "Mean Square Residual",
+     main = "Minimum MSres VS. P")
+```
+
+\bigskip
+I would choose the model at p = 4, because at p = 4 we have the minimum $MS_{Res}$.In other words, $MS_{Res}$ starts increasing after p = 4. 
+
+Our final model is the same as part a : $y = -0.01778 - 0.2982 x_1 +1.303 x_3 - 0.000005536 x_6$.
+
+\subsection*{c). Mallow's $C_p$ Statistic}
+$$C_P = \frac{SS_{Res}(P)}{\hat{\sigma}^2}- n + 2p$$
+```{r}
+# we estimate sigma using the MSres from the full model
+fullfit <- lm(y ~ x1 + x2 + x3 + x4 + x5 + x6 + x7)
+sum_full <- summary(fullfit)
+# unbiased estimated sigma
+sig_est <- sum_full$sigma^2
+# p = 2 
+p2_cp_x1 <- sum(sum_p2x1$residuals^2)/sig_est - 28 + 2 * 2
+p2_cp_x2 <- sum(sum_p2x2$residuals^2)/sig_est - 28 + 2 * 2
+p2_cp_x3 <- sum(sum_p2x3$residuals^2)/sig_est - 28 + 2 * 2
+p2_cp_x4 <- sum(sum_p2x4$residuals^2)/sig_est - 28 + 2 * 2
+p2_cp_x5 <- sum(sum_p2x5$residuals^2)/sig_est - 28 + 2 * 2
+p2_cp_x6 <- sum(sum_p2x6$residuals^2)/sig_est - 28 + 2 * 2
+p2_cp_x7 <- sum(sum_p2x7$residuals^2)/sig_est - 28 + 2 * 2
+# p = 2
+c(p2_cp_x1, p2_cp_x2, p2_cp_x3, p2_cp_x4, p2_cp_x5, p2_cp_x6, p2_cp_x7)
+# regsubsets()
+(p2_cp <- sum_p2$cp[which.min(abs(sum_p2$cp-2))])
+```
+\bigskip
+We choose the cp that is closest to p. when p = 2, we choose cp = 201.4526 when only x5 in our model.
+\newline
+Using the same method for p = 3,...5.
+```{r}
+# p = 3
+(p3_cp <- sum_p3$cp[which.min(abs(sum_p3$cp-3))])
+# p = 4
+(p4_cp <- sum_p4$cp[which.min(abs(sum_p4$cp-4))])
+# p = 5
+(p5_cp <- sum_p5$cp[which.min(abs(sum_p5$cp-5))])
+# cp vector
+cp <- c(p2_cp, p3_cp, p4_cp, p5_cp)
+plot(p, cp, abline(0,1),
+     ylab = "Mallow's Cp",
+     main = "best Cp VS. P",)
+```
+\bigskip
+Again, We will choose the cp that is closest to p. Replot to examine points when p = 4 and p = 5.
+\bigskip
+```{r}
+plot(p, cp, abline(0,1),
+     xlim = c(0,5),
+     ylim = c(0,5),
+     ylab = "Mallow's Cp",
+     main = "best Cp VS. P")
+```
+\bigskip
+According to the plot, we can observe that cp is more closer to p when p = 5.
+\bigskip
+```{r}
+# final model
+summary(p5, all.best = FALSE)
+lm(y~ x1 + x3 + x6 + x7)
+```
+\bigskip
+Our final model is: $y = -0.0179 - 0.2978x_1 +1.308x_3 -0.000005579x_6 +0.005204x_7$.
+
+
+
+
+
+
+

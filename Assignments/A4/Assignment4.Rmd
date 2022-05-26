@@ -1,0 +1,303 @@
+---
+title: "Assignment 4"
+output: pdf_document
+---
+
+```{r}
+# packages
+library(tidyverse)
+library(faraway)
+library(car)
+```
+
+# 2.
+
+# a).
+```{r}
+# import data
+assign4_i <- read.csv("assign4_i.csv")
+attach(assign4_i)
+assign4_i <- select(assign4_i,x1:y)
+
+# unit length scaling
+assign4_imean <- apply(assign4_i, 2, FUN = mean)
+assign4_isd <- apply(assign4_i, 2, FUN = sd)
+sjj_sqrt_4i <- sqrt(9-1)*assign4_isd
+w1_4i <- (x1-assign4_imean[1])/sjj_sqrt_4i[1]
+w2_4i <- (x2-assign4_imean[2])/sjj_sqrt_4i[2]
+sst_4i <- sum((y-assign4_imean[3])^2)
+yi_4i <- (y-assign4_imean[3])/sqrt(sst_4i)
+assign4_i_scaled <- lm(yi_4i ~ -1+ w1_4i + w2_4i)
+(assign4_i_sum <- summary(assign4_i_scaled))
+```
+
+The standardized regression coefficients are 0.9137 and 0.3068.
+
+\newpage
+# b).
+```{r}
+# (W'W)^-1 matrix
+W_4i <- cbind(w1_4i,w2_4i)
+solve(t(W_4i) %*% W_4i) * assign4_i_sum$sigma^2
+```
+
+The non-diagonal elements are 0, the covariance between estimates of the coefficients for x1 and x2 is 0, so the estimates of the coefficients for x1 and x2 are independent.
+
+\newpage
+# c).
+```{r}
+# diagnol of (W'W)^-1 matrix and VIF
+diag(solve(t(W_4i) %*% W_4i))
+vif(assign4_i_scaled)
+```
+
+VIF is 1.
+
+\newpage
+# d).
+```{r}
+# import data
+assign4_ii <- read.csv("assign4_ii.csv")
+attach(assign4_ii)
+assign4_ii <- select(assign4_ii,x1:y)
+
+# unit length scaling
+assign4_iimean <- apply(assign4_ii, 2, FUN = mean)
+assign4_iisd <- apply(assign4_ii, 2, FUN = sd)
+sjj_sqrt_4ii <- sqrt(9-1)*assign4_iisd
+w1_4ii <- (x1-assign4_iimean[1])/sjj_sqrt_4ii[1]
+w2_4ii <- (x2-assign4_iimean[2])/sjj_sqrt_4ii[2]
+sst_4ii <- sum((y-assign4_iimean[3])^2)
+yi_4ii <- (y-assign4_iimean[3])/sqrt(sst_4ii)
+assign4_ii_scaled <- lm(yi_4ii ~ -1+ w1_4ii + w2_4ii)
+(assign4_ii_sum <- summary(assign4_ii_scaled))
+```
+
+The standardized regression coefficients are 0.89411 and -0.01155.
+
+\newpage
+# e).
+```{r}
+# (W'W)^-1 matrix
+W_4ii <- cbind(w1_4ii,w2_4ii)
+solve(t(W_4ii) %*% W_4ii) * assign4_ii_sum$sigma^2
+```
+
+The non-diagonal elements are not 0, the covariance between estimates of the coefficients for x1 and x2 are -0.03194144, so the estimates of the coefficients for x1 and x2 are dependent.
+
+\newpage
+# f).
+```{r}
+# diagnol of (W'W)^-1 matrix and VIF
+diag(solve(t(W_4ii) %*% W_4ii))
+vif(assign4_ii_scaled)
+```
+
+VIF is 1.660661.
+
+\newpage
+# g).
+
+The design from assign4_i are preferable, because the estimates of the coefficients for x1 and x2 are independent, and VIF is 1 which means x1 and x2 are not correlated. 
+
+\newpage
+# 3.
+```{r}
+# generate Y
+attach(assign4_i)
+
+# n=9
+x1 <- c(1,2,3,1,2,3,1,2,3)
+x2 <- c(1,1,1,2,2,2,3,3,3)
+for(i in 1:1000){
+  eps <- rnorm(9, mean=0, sd=20)
+  y =  2*x1 + 2*x2 + eps
+  reg1 <- lm(y ~ -1+x1+x2)
+  reg_sum1 <- summary(reg1)
+}
+
+# n=18
+x1 <- c(1,2,3,1,2,3,1,2,3)
+x2 <- c(1,1,1,2,2,2,3,3,3)
+x1 <- cbind(rep(x1,2))
+x2 <- cbind(rep(x2,2))
+for(i in 1:1000){
+  eps <- rnorm(n = 18, mean=0, sd=20)
+  y <- 2*x1 + 2*x2 + eps
+  reg2 <- lm(y ~ -1 + x1 + x2)
+  reg_sum2 <- summary(reg2)
+  reg_sum2
+}
+
+# n=27
+x1 <- c(1,2,3,1,2,3,1,2,3)
+x2 <- c(1,1,1,2,2,2,3,3,3)
+x1 <- cbind(rep(x1,3))
+x2 <- cbind(rep(x2,3))
+for(i in 1:1000){
+  eps <- rnorm(n = 27, mean=0, sd=20)
+  y <- 2*x1 + 2*x2 + eps
+  reg3 <- lm(y ~ -1 + x1 + x2)
+  reg_sum3 <- summary(reg3)
+  reg_sum3
+}
+
+# n=36
+x1 <- c(1,2,3,1,2,3,1,2,3)
+x2 <- c(1,1,1,2,2,2,3,3,3)
+x1 <- cbind(rep(x1,4))
+x2 <- cbind(rep(x2,4))
+for(i in 1:1000){
+  eps <- rnorm(n = 36, mean=0, sd=20)
+  y <- 2*x1 + 2*x2 + eps
+  reg4 <- lm(y ~ -1 + x1 + x2)
+  reg_sum4 <- summary(reg4)
+  reg_sum4
+}
+
+# n= ...
+```
+
+
+
+\newpage
+# 4.
+# a).
+```{r}
+# import data
+pig <- read.csv("guinea_pig.csv")
+attach(pig)
+pairs(pig)
+```
+
+# (i)Comment on the relationship between the predictors. Do you observe any issues?
+
+  Since Gpig is just the observation number, we will not discuss it. From the pair plots, we can observe that there is a strong linear relationship between BodyWt and Dose. and the relationships between BodyWt and LiverWt, LiverWt and Dose seems are slightly linear. We will further discuss multicollinearity later.
+
+# (ii)Comment on the relationship between the predictors and the response variable.
+  BodyWt and Dose seems have a slightly linear relationship with response variable, but LiverWt is not linear to response variable at all.  
+
+\newpage
+# b).
+```{r}
+pig.lm <- lm(data = pig, y ~ BodyWt + LiverWt + Dose)
+summary(pig.lm)
+```
+
+  After fitting the model, the p-value is 0.07197 which is quite large, and R-squared is 0.3639 looks not very well.
+the p-values for each variable are 0.0177, 0.4193, 0.0151. If we choose our significant level as 0.05, then the p-value for BodyWt and Dose are less than 0.05, We can say that BodyWt have linear relationship with response variable in presence of other variables in the model. We can make the same conclusion to Dose as well.
+
+\newpage
+# c).
+```{r}
+plot(pig.lm)
+plot(pig.lm$fitted.values,rstudent(pig.lm),
+     xlab = "fitted values",
+     ylab = "studentized residuals",
+     main = "residual VS. fitted plot")
+plot(pig.lm$residuals, 
+     ylab = "Residuals",
+     main = "Residuals VS. index")
+avPlots(pig.lm)
+
+```
+
+  From residual vs fitted, and scale-location plot, the point are not distributed around 0, so the assumption of constant variance is violated.
+  From Normal Q-Q plot, we can see most of the point are not fitted on the line, so it violates the normality assumption.
+  From Residuals vs Leverage, we can see point 3 has a high leverage, and outside the cook's distance line which means point 3 is influential point. 
+  From partial regression plot, we can see LiverWt is not linear to y. BodyWt and Dose slightly linear to y.
+  
+\newpage
+# d).
+```{r}
+# X matrix
+X <- cbind(rep(1,19), BodyWt, LiverWt, Dose)
+# Hat matrix
+H <- X %*% solve(t(X) %*% X) %*% t(X)
+# hii
+hii <- diag(H)
+# Identify points of high Leverage
+p<-ncol(X) 
+n<-nrow(X)
+which(hii>2*p/n) 
+pig_inf <- influence(pig.lm)
+sort(pig_inf$hat, decreasing = TRUE)
+```
+
+  We will consider the point has high leverage if its leverage large than 2*p/n (in this case 0.4210526316), point 3 has leverage higher than this value.
+
+\newpage
+# e).
+```{r}
+pig_cook <- cooks.distance(pig.lm)
+sort(pig_cook, decreasing = TRUE)
+```
+
+  The cook's distance (di) for point 3 is relatively large.
+  From Residuals vs Leverage plot, point 3 is outside the cook's distance line (red dot line) which indicates point 3 is influential point.
+  From the partial regression plot, we observe that point 3 is remote point which indicates high leverage, and we proved this by the calculation of leverage.
+
+\newpage
+# f).
+```{r}
+# VIF
+vif(pig.lm)
+
+# Pairwise correlations
+pigx <- cbind(BodyWt,LiverWt,Dose)
+cor(pigx)
+
+# eigenvalues
+xx <- t(pigx) %*% pigx
+(lambda <- eigen(xx)$values)
+
+# Condition number
+max(lambda)/min(lambda)
+max(lambda)/lambda
+```
+
+  we observed a strong linear relationship between BodyWt and Dose from paris plot
+  VIF for BodyWt and Dose are large than 10.
+  From pairwise correlations we observed that covariance between BodyWt and Dose is almost 1 which is really high.
+  The eigenvalue for Dose are small, and our condition number is larger than 1000 which indicates we have a multicollinearily problem.
+  Above all, we can conclude that BodyWt and Dose are correlated.
+
+\newpage
+# g).
+```{r}
+pig_new <- filter(pig, Gpig != 3)
+pig.lm.new <- lm(data = pig_new,
+                 y ~ BodyWt + LiverWt + Dose)
+summary(pig.lm.new)
+summary(pig.lm)
+```
+```{r}
+avPlots(pig.lm)
+avPlots(pig.lm.new)
+```
+  After refit the model without the most influential observation (point 3). There is no evidence of a significant linear relationship with the response variable, since all the p-values are large.
+  Because point 3 has high leverage which means point 3 is remote point, and it is potential influential point may change the regression coefficient.
+  Moreover point 3 has relatively high cook's distance which indicates point 3 is considered as influential point.
+  We can clearly see the estimated coefficients change from the regression models, and we can observed the significant change from partial regression plot as well especially for variable BodyWt and Dose.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
